@@ -25,11 +25,14 @@ extension BigUInt: Comparable {
     ///
     /// - Complexity: O(count)
     public static func compare(_ a: BigUInt, _ b: BigUInt) -> ComparisonResult {
-        if a.count != b.count { return a.count > b.count ? .orderedDescending : .orderedAscending }
-        for i in (0 ..< a.count).reversed() {
+        let aCount = a.count
+        if aCount != b.count { return a.count > b.count ? .orderedDescending : .orderedAscending }
+        var i = aCount - 1
+        while i >= 0 {
             let ad = a[i]
             let bd = b[i]
             if ad != bd { return ad > bd ? .orderedDescending : .orderedAscending }
+            i -= 1
         }
         return .orderedSame
     }
