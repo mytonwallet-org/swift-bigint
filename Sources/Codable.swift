@@ -102,54 +102,21 @@ extension Array where Element: FixedWidthInteger {
 
 extension BigInt: Codable {
     public init(from decoder: Decoder) throws {
-        if let container = try? decoder.singleValueContainer(), let stringValue = try? container.decode(String.self) {
-            if stringValue.hasPrefix("0x") || stringValue.hasPrefix("0X") {
-                guard let bigUInt = BigUInt(stringValue.dropFirst(2), radix: 16) else {
-                    throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid hexadecimal BigInt string")
-                }
-                self.init(sign: .plus, magnitude: bigUInt)
-            } else {
-                guard let bigInt = BigInt(stringValue) else {
-                    throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid decimal BigInt string")
-                }
-                self = bigInt
-            }
-        } else {
-            var container = try decoder.unkeyedContainer()
-
-                // Decode sign
-                let sign: BigInt.Sign
-                switch try container.decode(String.self) {
-                    case "+":
-                        sign = .plus
-                    case "-":
-                            sign = .minus
-                    default:
-                                throw DecodingError.dataCorrupted(.init(codingPath: container.codingPath,
-                                            debugDescription: "Invalid big integer sign"))
-                }
-
-            // Decode magnitude
-            let words = try [UInt](count: container.count?.advanced(by: -1)) { () -> UInt64? in
-                guard !container.isAtEnd else { return nil }
-                return try container.decode(UInt64.self)
-            }
-            let magnitude = BigUInt(words: words)
-
-                self.init(sign: sign, magnitude: magnitude)
+        let container = try decoder.singleValueContainer()
+        let string = try container.decode(String.self)
+        guard let valueString = string.split(separator: ":", maxSplits: 1).last else {
+            throw DecodingError.dataCorrupted(.init(codingPath: container.codingPath, debugDescription: "Tried to decode empty string as BigInt"))
         }
+        guard let value = BigInt(valueString) else {
+            throw DecodingError.dataCorrupted(.init(codingPath: container.codingPath, debugDescription: "Failed to parse string as BigInt"))
+        }
+        self = value
     }
 
     public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
-        try container.encode(sign == .plus ? "+" : "-")
-        let units = Units(of: UInt64.self, self.magnitude.words)
-        if units.isEmpty {
-            try container.encode(0 as UInt64)
-        }
-        else {
-            try container.encode(contentsOf: units)
-        }
+        var container = encoder.singleValueContainer()
+        let string = "bigint:\(self)"
+        try container.encode(string)
     }
 }
 

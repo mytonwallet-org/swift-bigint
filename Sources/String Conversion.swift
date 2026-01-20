@@ -224,16 +224,14 @@ extension BigInt: CustomStringConvertible {
 extension BigUInt: CustomDebugStringConvertible {
     /// Return the decimal representation of this integer.
     public var debugDescription: String {
-        let text = String(self)
-        return text + " (\(self.bitWidth) bits)"
+        description
     }
 }
 
 extension BigInt: CustomDebugStringConvertible {
     /// Return the decimal representation of this integer.
     public var debugDescription: String {
-        let text = String(self)
-        return text + " (\(self.magnitude.bitWidth) bits)"
+        description
     }
 }
 
