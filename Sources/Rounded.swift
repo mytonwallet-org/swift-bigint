@@ -29,7 +29,7 @@ public extension BigUInt {
         let rem = self % pow10
         var result = self - rem
         if roundHalfUp {
-            let half = pow10 >> 2
+            let half = pow10 >> 1
             if rem >= half {
                 result += pow10
             }
